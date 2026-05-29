@@ -8,6 +8,7 @@ from .analysts.sentiment_analyst import (
     create_sentiment_analyst,
     create_social_media_analyst,  # deprecated alias kept for back-compat
 )
+from .analysts.gemini_futures_assistant import create_gemini_futures_assistant
 
 from .researchers.bear_researcher import create_bear_researcher
 from .researchers.bull_researcher import create_bull_researcher
@@ -15,6 +16,7 @@ from .researchers.bull_researcher import create_bull_researcher
 from .risk_mgmt.aggressive_debator import create_aggressive_debator
 from .risk_mgmt.conservative_debator import create_conservative_debator
 from .risk_mgmt.neutral_debator import create_neutral_debator
+from .risk_mgmt.topstep_risk_manager import create_topstep_risk_manager
 
 from .managers.research_manager import create_research_manager
 from .managers.portfolio_manager import create_portfolio_manager
@@ -37,6 +39,8 @@ __all__ = [
     "create_portfolio_manager",
     "create_conservative_debator",
     "create_sentiment_analyst",
-    "create_social_media_analyst",  # deprecated; will be removed in a future version
+    "create_social_media_analyst",
     "create_trader",
+    "create_gemini_futures_assistant",
+    "create_topstep_risk_manager",
 ]

@@ -429,3 +429,65 @@ class TradingAgentsGraph:
     def process_signal(self, full_signal):
         """Process a signal to extract the core decision."""
         return self.signal_processor.process_signal(full_signal)
+
+from tradingagents.graph.futures_setup import FuturesGraphSetup
+
+class FuturesTradingGraph(TradingAgentsGraph):
+    def __init__(self, selected_analysts=["market", "social", "news", "fundamentals"], debug=False, config=None):
+        super().__init__(selected_analysts, debug, config)
+        self.futures_setup = FuturesGraphSetup(
+            self.llm_factory.get_quick_thinking_llm(),
+            self.llm_factory.get_deep_thinking_llm(),
+            self.tool_nodes
+        )
+        self.futures_workflow = self.futures_setup.setup_graph()
+        self.futures_graph = self.futures_workflow.compile()
+
+    def propagate_futures(self, ticker, trade_date, current_pnl=0.0, max_drawdown=0.0):
+        init_state = {
+            "company_of_interest": ticker,
+            "trade_date": trade_date,
+            "messages": [],
+            "current_daily_pnl": current_pnl,
+            "current_max_drawdown": max_drawdown,
+            "market_report": "",
+            "news_report": "",
+            "sentiment_report": "",
+            "trader_investment_plan": "",
+            "risk_management_report": "",
+            "risk_status": "GREEN"
+        }
+
+        final_state = self.futures_graph.invoke(init_state)
+        return final_state
+
+from tradingagents.graph.futures_setup import FuturesGraphSetup
+
+class FuturesTradingGraph(TradingAgentsGraph):
+    def __init__(self, selected_analysts=["market", "social", "news", "fundamentals"], debug=False, config=None):
+        super().__init__(selected_analysts, debug, config)
+        self.futures_setup = FuturesGraphSetup(
+            self.quick_thinking_llm,
+            self.deep_thinking_llm,
+            self.tool_nodes
+        )
+        self.futures_workflow = self.futures_setup.setup_graph()
+        self.futures_graph = self.futures_workflow.compile()
+
+    def propagate_futures(self, ticker, trade_date, current_pnl=0.0, max_drawdown=0.0):
+        init_state = {
+            "company_of_interest": ticker,
+            "trade_date": trade_date,
+            "messages": [],
+            "current_daily_pnl": current_pnl,
+            "current_max_drawdown": max_drawdown,
+            "market_report": "",
+            "news_report": "",
+            "sentiment_report": "",
+            "trader_investment_plan": "",
+            "risk_management_report": "",
+            "risk_status": "GREEN"
+        }
+
+        final_state = self.futures_graph.invoke(init_state)
+        return final_state

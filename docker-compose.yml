@@ -1,12 +1,82 @@
 services:
-  tradingagents:
-    build: .
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  timescaledb:
+    image: timescale/timescaledb:latest-pg15
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - timescaledb_data:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "8000:8000"
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - DATABASE_URL=postgresql+asyncpg://postgres:password@timescaledb:5432/postgres
     env_file:
       - .env
-    volumes:
-      - tradingagents_data:/home/appuser/.tradingagents
-    tty: true
-    stdin_open: true
+    depends_on:
+      - kafka
+      - timescaledb
+    command: uvicorn backend.main:app --host 0.0.0.0 --port 8000
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - DATABASE_URL=postgresql+asyncpg://postgres:password@timescaledb:5432/postgres
+    env_file:
+      - .env
+    depends_on:
+      - kafka
+      - timescaledb
+    command: python -m backend.worker
+
+  simulator:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+    env_file:
+      - .env
+    depends_on:
+      - kafka
+    command: python -m backend.simulator_service
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api
 
   ollama:
     image: ollama/ollama:latest
@@ -15,21 +85,7 @@ services:
     profiles:
       - ollama
 
-  tradingagents-ollama:
-    build: .
-    env_file:
-      - .env
-    environment:
-      - LLM_PROVIDER=ollama
-    volumes:
-      - tradingagents_data:/home/appuser/.tradingagents
-    depends_on:
-      - ollama
-    tty: true
-    stdin_open: true
-    profiles:
-      - ollama
-
 volumes:
   tradingagents_data:
   ollama_data:
+  timescaledb_data:

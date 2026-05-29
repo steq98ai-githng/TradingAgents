@@ -226,3 +226,22 @@ def render_pm_decision(decision: PortfolioDecision) -> str:
     if decision.time_horizon:
         parts.extend(["", f"**Time Horizon**: {decision.time_horizon}"])
     return "\n".join(parts)
+
+# ---------------------------------------------------------------------------
+# Futures Assistant
+# ---------------------------------------------------------------------------
+
+class FuturesHint(BaseModel):
+    """Hint provided by the Futures Assistant for MNQ trading."""
+    trend_analysis: str = Field(description="Analysis of the current intraday trend.")
+    key_levels: str = Field(description="Important support and resistance levels.")
+    market_hint: str = Field(description="Specific hint or pattern spotted (e.g. 'Bearish Engulfing').")
+    risk_warning: str = Field(description="Warning about upcoming events or volatility.")
+
+def render_futures_hint(hint: FuturesHint) -> str:
+    return "\n".join([
+        f"**Trend Analysis**: {hint.trend_analysis}",
+        f"**Key Levels**: {hint.key_levels}",
+        f"**Market Hint**: {hint.market_hint}",
+        f"**Risk Warning**: {hint.risk_warning}",
+    ])
