@@ -35,8 +35,8 @@ function App() {
     window.addEventListener('resize', handleResize);
 
     // WebSocket mock for demo
+    let lastClose = initialData[initialData.length - 1].close;
     const interval = setInterval(() => {
-        const lastClose = initialData[initialData.length-1].close;
         const nextClose = lastClose + (Math.random() - 0.5) * 10;
         const newCandle = {
             time: Math.floor(Date.now() / 1000),
@@ -46,6 +46,7 @@ function App() {
             close: nextClose
         };
         candlestickSeries.current.update(newCandle);
+        lastClose = nextClose;
     }, 2000);
 
     return () => {
