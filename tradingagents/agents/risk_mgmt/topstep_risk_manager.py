@@ -35,9 +35,9 @@ Respond with a 'Topstep Risk Report'.
         response = llm.invoke(prompt)
 
         return {
-            "messages": [response],
-            "risk_management_report": response.content,
-            "risk_status": "RED" if current_daily_pnl <= -DLL_LIMIT else "GREEN"
+            'messages': [response],
+            'risk_management_report': response.content,
+            'risk_status': 'RED' if (current_daily_pnl <= -DLL_LIMIT or current_max_drawdown >= MLL_LIMIT) else 'GREEN'
         }
 
     return risk_manager_node
